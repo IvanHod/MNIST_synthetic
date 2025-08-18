@@ -2,7 +2,7 @@
 
 The library for digits generations (like MNIST). The default size of images is 28x28.
 
-![generated_rotate_numbers.png](assets/generated_rotate_numbers.png)
+![generated_rotate_numbers.png](https://raw.githubusercontent.com/IvanHod/MNIST_synthetic/refs/heads/master/assets/generated_rotate_numbers.png)
 
 ## Number Generation
 
