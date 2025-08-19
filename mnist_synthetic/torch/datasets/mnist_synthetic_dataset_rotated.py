@@ -4,7 +4,6 @@ from pathlib import Path
 import cv2
 import numpy as np
 from PIL import Image
-from PIL.Image import Resampling
 from numpy._typing import NDArray
 
 from mnist_synthetic.generator import NumbersGenerator
@@ -61,8 +60,11 @@ class MNISTSyntheticRotated(MNISTSyntheticRotate):
         img, label = generator.generate()
 
         img = ToCenterNumpy(offset=4, resample=self.resample)(img)
-        angle = generator.seed_rng.integers(-self.max_angle, self.max_angle)
-        img = rotation.rotate_image_np(img, angle, interpolation=self.resample)
+
+        angle = 0
+        if self.max_angle > 0:
+            angle = generator.seed_rng.integers(-self.max_angle, self.max_angle)
+            img = rotation.rotate_image_np(img, angle, interpolation=self.resample)
 
         return img, int(label), {'angle': angle}
 
