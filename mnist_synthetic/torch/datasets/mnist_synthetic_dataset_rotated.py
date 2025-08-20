@@ -39,10 +39,13 @@ class MNISTSyntheticRotate(MNISTSynthetic):
         target: int = self.targets[idx]
 
         img_np = ToCenterNumpy(offset=4, resample=self.resample)(img_np)
-        angle = int(self.random_angle.integers(-self.max_angle, self.max_angle))
-        img_np = rotation.rotate_image_np(img_np, angle, interpolation=self.resample)
-        # Many transform methods required Pillow
+        angle = 0
+        if self.max_angle > 0:
+            angle = int(self.random_angle.integers(-self.max_angle, self.max_angle))
+            img_np = rotation.rotate_image_np(img_np, angle, interpolation=self.resample)
+            angle = -angle
 
+        # Many transform methods required Pillow
         img = Image.fromarray(img_np, mode="L")
         if self.transform is not None:
             img = self.transform(img)
@@ -50,7 +53,7 @@ class MNISTSyntheticRotate(MNISTSynthetic):
         if self.target_transform is not None:
             target = self.target_transform(target)
 
-        return img, target, -angle
+        return img, target, angle
 
 
 class MNISTSyntheticRotated(MNISTSyntheticRotate):
@@ -65,6 +68,7 @@ class MNISTSyntheticRotated(MNISTSyntheticRotate):
         if self.max_angle > 0:
             angle = generator.seed_rng.integers(-self.max_angle, self.max_angle)
             img = rotation.rotate_image_np(img, angle, interpolation=self.resample)
+            angle = -angle
 
         return img, int(label), {'angle': angle}
 
