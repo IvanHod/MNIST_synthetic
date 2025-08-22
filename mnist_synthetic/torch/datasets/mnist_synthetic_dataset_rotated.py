@@ -6,10 +6,10 @@ import numpy as np
 from PIL import Image
 from numpy._typing import NDArray
 
+from torchvision.transforms import functional as F, InterpolationMode
+
 from mnist_synthetic.generator import NumbersGenerator
 from mnist_synthetic.torch.datasets import MNISTSynthetic
-from mnist_synthetic.torch.transforms.to_center import ToCenterNumpy
-from mnist_synthetic.utils import rotation
 
 
 class MNISTSyntheticRotate(MNISTSynthetic):
@@ -38,17 +38,17 @@ class MNISTSyntheticRotate(MNISTSynthetic):
         img_np = self.data[idx]
         target: int = self.targets[idx]
 
-        img_np = ToCenterNumpy(offset=4, resample=self.resample)(img_np)
-        angle = 0
-        if self.max_angle > 0:
-            angle = int(self.random_angle.integers(-self.max_angle, self.max_angle))
-            img_np = rotation.rotate_image_np(img_np, angle, interpolation=self.resample)
-            angle = -angle
-
         # Many transform methods required Pillow
         img = Image.fromarray(img_np, mode="L")
         if self.transform is not None:
             img = self.transform(img)
+
+        angle = 0
+        if self.max_angle > 0:
+            angle = int(self.random_angle.integers(-self.max_angle, self.max_angle))
+            img = F.rotate(img, angle, interpolation=InterpolationMode.BILINEAR)
+            # img = rotation.rotate_image_np(img, angle, mode=self.resample)
+            angle = -angle
 
         if self.target_transform is not None:
             target = self.target_transform(target)
@@ -62,17 +62,21 @@ class MNISTSyntheticRotated(MNISTSyntheticRotate):
     def _generate_image(self, generator: NumbersGenerator) -> tuple[NDArray[np.uint8], int, dict[str, Any] | None]:
         img, label = generator.generate()
 
-        img = ToCenterNumpy(offset=4, resample=self.resample)(img)
+        # img = ToCenterNumpy(offset=None, resample=self.resample)(img)
 
         angle = 0
         if self.max_angle > 0:
-            angle = generator.seed_rng.integers(-self.max_angle, self.max_angle)
-            img = rotation.rotate_image_np(img, angle, interpolation=self.resample)
+            # angle = generator.seed_rng.integers(-self.max_angle, self.max_angle)
+            # img = rotation.rotate_image_np(img, angle, mode=self.resample)
             angle = -angle
 
         return img, int(label), {'angle': angle}
 
     def __getitem__(self, idx: int) -> tuple[Any, int, int]:
         img, target = super(MNISTSyntheticRotate, self).__getitem__(idx)
+
+        angle = self.extra[idx]['angle']
+        if abs(angle) > 0:
+            img = F.rotate(img, -angle, interpolation=InterpolationMode.BILINEAR)
 
         return img, target, self.extra[idx]['angle']
