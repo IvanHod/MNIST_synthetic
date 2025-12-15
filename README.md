@@ -1,43 +1,5 @@
-# MNIST Synthetic
-
-The library for digits generations (like MNIST). The default size of images is 28x28.
-
-![generated_rotate_numbers.png](https://raw.githubusercontent.com/IvanHod/MNIST_synthetic/refs/heads/master/assets/generated_rotate_numbers.png)
-
-## Number Generation
-
-You can use default settings, or configurate generated number use `GeneratorConfig`.
-```python
-from mnist_synthetic.generator import NumbersGenerator
-from mnist_synthetic.config import GeneratorConfig
-
-config: GeneratorConfig = GeneratorConfig()
-generator = NumbersGenerator(seed=None, )
+```json
+{
+  "readme": "# MNIST_synthetic\n\n---\n\n[![PyPi](https://badge.fury.io/py/mnist_synthetic.svg)](https://badge.fury.io/py/mnist_synthetic)\n[![OSA-improved](https://img.shields.io/badge/improved%20by-OSA-yellow)](https://github.com/aimclub/OSA)\n\n---\n\n## Overview\n\nMNIST_synthetic is a tool for creating artificial datasets of handwritten digits. It allows users to easily generate images resembling the popular MNIST dataset, offering a flexible way to produce data for testing, experimentation, or augmenting existing machine learning projects.\n\n---\n\n## Table of Contents\n\n- [Core features](#core-features)\n- [Installation](#installation)\n- [Getting Started](#getting-started)\n- [Examples](#examples)\n- [Contributing](#contributing)\n- [Citation](#citation)\n\n---\n\n## Core features\n\n1. **Synthetic Digit Generation**: The core functionality of the library is to generate synthetic images of digits (0-9) similar to the MNIST dataset.\n2. **Configurable Image Generation**: Users can configure the generated digits using a `GeneratorConfig` class, allowing control over image size (width, height) and color channels.\n3. **Individual Digit Generation**: The library provides methods to generate specific digits (e.g., `generate_0()`, `generate_1()`) individually.\n4. **Random Digit Generation**: The `generate()` method allows for the generation of random digits from the set of available symbols (0-9).\n5. **PyTorch Dataset Integration**: The library includes a `MNISTSynthetic` class that inherits from `torch.utils.data.Dataset`, enabling seamless integration with PyTorch training pipelines.\n\n---\n\n## Installation\n\n**Prerequisites:** requires Python >=3.12,<3.14\n\nInstall MNIST_synthetic using one of the following methods:\n\n**Using PyPi:**\n\n```sh\npip install mnist_synthetic\n```\n\n---\n\n## Getting Started\n\nYou can generate numbers using default settings or configure them with `GeneratorConfig`:\n\n```python\nfrom mnist_synthetic.generator import NumbersGenerator\nfrom mnist_synthetic.config import GeneratorConfig\n\nconfig: GeneratorConfig = GeneratorConfig()\ngenerator = NumbersGenerator(seed=None, )\n\nimg, label = generator.generate_0()\n```\n\nTo generate a random number, simply call the `generate` method:\n\n```python\nimg, label = generator.generate()\n```\n\nTo use the datasets, you can initialize `MNISTSynthetic`:\n\n```python\nfrom matplotlib import pyplot as plt\nfrom mnist_synthetic.torch.datasets import MNISTSynthetic\n\ndataset = MNISTSynthetic(10, seed=42)\n\nfig, axes = plt.subplots(1, 10, figsize=(10, 4))\nfor i, ax in enumerate(axes):\n    ax.imshow(dataset[i][0], cmap='gray')\n    ax.axis('off')\n    ax.set_label(str(dataset[i][1]))\n```\n\n![generated_rotate_numbers.png](https://raw.githubusercontent.com/IvanHod/MNIST_synthetic/refs/heads/master/assets/generated_rotate_numbers.png)\n\n---\n\n## Examples\n\nExamples of how this should work and how it should be used are available [here](https://github.com/IvanHod/MNIST_synthetic/tree/master/examples).\n\n---\n\n## Contributing\n\n- **[Report Issues](https://github.com/IvanHod/MNIST_synthetic/issues)**: Submit bugs found or log feature requests for the project.\n\n---\n\n## Citation\n\nIf you use this software, please cite it as below.\n\n### APA format:\n\n    IvanHod (2025). MNIST_synthetic repository [Computer software]. https://github.com/IvanHod/MNIST_synthetic\n\n### BibTeX format:\n\n    @misc{MNIST_synthetic,\n\n        author = {IvanHod},\n\n        title = {MNIST_synthetic repository},\n\n        year = {2025},\n\n        publisher = {github.com},\n\n        journal = {github.com repository},\n\n        howpublished = {\url{https://github.com/IvanHod/MNIST_synthetic.git}},\n\n        url = {https://github.com/IvanHod/MNIST_synthetic.git}\n\n    }"
+}
 ```
-
-To generate number it's enough to run method
-```python
-img, label = generator.generate_0()
-```
-
-To generate random number call just `generate`:
-```python
-img, label = generator.generate()
-```
-
-## Datasets
-
-To run it:
-```python
-from matplotlib import pyplot as plt
-from mnist_synthetic.torch.datasets import MNISTSynthetic
-
-dataset = MNISTSynthetic(10, seed=42)
-
-fig, axes = plt.subplots(1, 10, figsize=(10, 4))
-for i, ax in enumerate(axes):
-    ax.imshow(dataset[i][0], cmap='gray')
-    ax.axis('off')
-    ax.set_label(str(dataset[i][1]))
-```
-
