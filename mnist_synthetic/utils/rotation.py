@@ -49,6 +49,9 @@ class Rotation:
         self.angle_generator = np.random.default_rng(seed=seed)
 
     def generate_angle(self) -> int:
+        if self.max_angle == 0:
+            return 0
+
         return int(self.angle_generator.integers(-self.max_angle, self.max_angle))
 
     def __call__(

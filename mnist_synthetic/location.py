@@ -42,13 +42,31 @@ class RangeRelatedLocation(RangeLocation):
         super().__init__(start, end)
         self._max_size = max_size
 
-    def generate(self, seed_rng: Generator, _prev_val: int | None = None) -> int:
+    def generate(self, seed_rng: Generator, prev_val: int | None = None) -> int:
         assert isinstance(self.start, float) and isinstance(self.end, float), 'start and end must be floats'
         start, end = int(self.start * self._max_size), int(self.end * self._max_size)
+
+        # add constant value
+        if prev_val is not None:
+            start, end = prev_val + start, prev_val + end
+
         if start == end:
             return start
 
         return int(seed_rng.integers(start, end))
+
+
+class RangeRelatedValueLocation(RangeRelatedLocation):
+    """  """
+    def __init__(self, start: float, end: float, max_size: int, value: int):
+        super().__init__(start, end, max_size)
+
+        assert isinstance(value, int), 'value must be integers'
+        self._value = value
+
+    def generate(self, seed_rng: Generator, _prev_val: int | None = None) -> int:
+        # here _prev_val is ignoring, because value is generated based on self._value
+        return super().generate(seed_rng, prev_val=self._value)
 
 
 class RangeOnPrevLocation(BaseLocation):

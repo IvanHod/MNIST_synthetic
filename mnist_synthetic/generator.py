@@ -8,8 +8,15 @@ from numpy.typing import NDArray
 
 from mnist_synthetic.config import GeneratorConfig
 from mnist_synthetic.utils.drawing import Drawing
-from mnist_synthetic.location import IntLocation, RangeLocation, RangeOnPrevLocation, RelatedLocation, \
-    RangeRelatedLocation, RangeOnPrevRelatedLocation
+from mnist_synthetic.location import (
+    IntLocation,
+    RangeLocation,
+    RangeOnPrevLocation,
+    RelatedLocation,
+    RangeRelatedLocation,
+    RangeOnPrevRelatedLocation,
+    RangeRelatedValueLocation
+)
 
 
 class BaseGenerator(ABC):
@@ -179,7 +186,21 @@ class NumbersGenerator(BaseGenerator):
 
         return rotated
 
-    def generate_4(self):
+    def generate_4(self) -> np.ndarray:
+        if self.config.digit_4_version <= 0:
+            return self.generate_4_top_open()
+        elif self.config.digit_4_version >= 1:
+            return self.generate_4_top_closed()
+
+        # Вероятностный выбор
+        if np.random.rand() < self.config.digit_4_version:
+            img = self.generate_4_top_closed()
+        else:
+            img = self.generate_4_top_open()
+        return img
+
+    def generate_4_top_open(self) -> np.ndarray:
+        # 4 - here top is open
         img = self._init_image()
 
         left, top, right, middle = self.draw.draw_line(
@@ -204,6 +225,40 @@ class NumbersGenerator(BaseGenerator):
             right_location=IntLocation(right),
             bottom_location=IntLocation(middle),
         )
+
+        return img
+
+    def generate_4_top_closed(self) -> np.ndarray:
+        img = self._init_image()
+
+        # straight right line
+        r_left, r_top, r_right, r_bottom = self.draw.draw_line(
+            img,
+            left_location=RangeRelatedLocation(0.6, 0.9, max_size=self.config.width),
+            top_location=RangeRelatedLocation(0.1, 0.3, max_size=self.config.height),
+            right_location=RangeOnPrevRelatedLocation(0.1, 0.1, max_size=self.config.width),
+            bottom_location=RangeOnPrevRelatedLocation(-0.5, 0.8, max_size=self.config.height),
+        )
+
+
+        # diagonal line to the left
+        c_left, c_bottom, _, _ = self.draw.draw_line(
+            img,
+            left_location=RangeRelatedLocation(0.2, 0.9, max_size=r_left),
+            top_location=RangeRelatedValueLocation(0.3, 0.8, max_size=r_bottom - r_top, value=r_top),
+            right_location=IntLocation(r_left),
+            bottom_location=IntLocation(r_top),
+        )
+
+        # horizontal line to the right crossed vertical line
+        self.draw.draw_line(
+            img,
+            left_location=IntLocation(c_left),
+            top_location=IntLocation(c_bottom),
+            right_location=RangeRelatedValueLocation(0.05, 0.2, max_size=self.config.width, value=r_left),
+            bottom_location=RangeOnPrevRelatedLocation(0.1, 0.1, max_size=self.config.height),
+        )
+
         return img
 
     def generate_5(self):
@@ -274,28 +329,34 @@ class NumbersGenerator(BaseGenerator):
 
         left, top, right, t_bottom = self.draw.draw_line(
             img,
-            left_location=IntLocation(5),
-            top_location=IntLocation(8),
-            right_location=RangeLocation(15, 22),
-            bottom_location=RangeLocation(5, 9)
+            left_location=RangeRelatedLocation(0.1, 0.2, self.config.width),
+            top_location=RangeRelatedLocation(0.2, 0.3, self.config.height),
+            right_location=RangeRelatedLocation(0.2, 0.8, self.config.width),
+            # upper or a little bit lower
+            bottom_location=RangeRelatedLocation(0.0, 0.32, self.config.height)
         )
+
         _, _, right_, bottom_ = self.draw.draw_line(
             img,
             left_location=IntLocation(right),
             top_location=IntLocation(t_bottom),
-            right_location=RangeLocation(left + 2, int((left + right) * 0.7)),
-            bottom_location=RangeLocation(t_bottom + 12, t_bottom + 16)
+            # From the left start of digit, and a little bit at the right
+            right_location=RangeOnPrevRelatedLocation(left / self.config.width, 0.05, self.config.width),
+            # Down almost to the bottom border
+            bottom_location=RangeOnPrevRelatedLocation(-0.4, 0.6, self.config.height)
         )
 
-        middle = (t_bottom + bottom_) // 2
-        center = (right + right_) // 2
-        self.draw.draw_line(
-            img,
-            left_location=RangeLocation(center-6, center - 2),
-            top_location=IntLocation(middle),
-            right_location=RangeLocation(center + 2, center + 6),
-            bottom_location=IntLocation(middle)
-        )
+        if self.config.digit_7_h_line_proba >= np.random.rand():
+            # if 1. -> then digit_7_h_line_proba will be bigger or equal then np.random.rand()
+            middle = (t_bottom + bottom_) // 2
+            center = (right + right_) // 2
+            self.draw.draw_line(
+                img,
+                left_location=RangeRelatedValueLocation(-0.2, -0.02, self.config.width, value=center),
+                top_location=IntLocation(middle),
+                right_location=RangeRelatedValueLocation(0.02, 0.2, self.config.width, value=center),
+                bottom_location=IntLocation(middle)
+            )
 
         return img
 
