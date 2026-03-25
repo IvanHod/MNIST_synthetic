@@ -12,7 +12,7 @@ from mnist_synthetic.generator import NumbersGenerator
 from mnist_synthetic.config import GeneratorConfig
 
 config: GeneratorConfig = GeneratorConfig()
-generator = NumbersGenerator(seed=None, )
+generator = NumbersGenerator(seed=None, config=config)
 ```
 
 To generate number it's enough to run method
